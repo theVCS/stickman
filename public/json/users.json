@@ -1,0 +1,22 @@
+[
+    {
+        "email": "emailId1@stickman.com",
+        "password": "password1@12345"
+    },
+    {
+        "email": "emailId2@stickman.com",
+        "password": "password2@12345"
+    },
+    {
+        "email": "emailId3@stickman.com",
+        "password": "password3@12345"
+    },
+    {
+        "email": "emailId4@stickman.com",
+        "password": "password4@12345"
+    },
+    {
+        "email": "emailId5@stickman.com",
+        "password": "password5@12345"
+    }
+]
