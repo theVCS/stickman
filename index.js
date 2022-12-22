@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const users = require("./public/json/users.json");
 const admin = require("./public/json/admin.json");
-const puppeteer = require("puppeteer");
 const { Timestamp } = require("firebase/firestore");
 
 const {
