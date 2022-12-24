@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
     admin: admin,
   };
 
-  res.render("index", context);
+  res.render("index.ejs", context);
 });
 
 app.get("/login/:worker", (req, res) => {
@@ -34,7 +34,7 @@ app.get("/login/:worker", (req, res) => {
     page: req.params["worker"],
   };
 
-  res.render("login", context);
+  res.render("login.ejs", context);
 });
 
 app.post("/admin", async (req, res) => {
@@ -47,13 +47,13 @@ app.post("/admin", async (req, res) => {
       error: "Please enter the admin email id",
       page: "admin",
     };
-    res.render("login", context);
+    res.render("login.ejs", context);
   } else {
     signInUser(email, password)
       .then((userdata) => {
         getAllData()
           .then((data) => {
-            res.render("admin", { email: email, entries: data });
+            res.render("admin.ejs", { email: email, entries: data });
           })
           .catch((err) => {
             context = {
@@ -61,7 +61,7 @@ app.post("/admin", async (req, res) => {
               admin: admin,
             };
 
-            res.render("index", context);
+            res.render("index.ejs", context);
           });
       })
       .catch((err) => {
@@ -70,7 +70,7 @@ app.post("/admin", async (req, res) => {
           error: "wrong password",
           page: "admin",
         };
-        res.render("login", context);
+        res.render("login.ejs", context);
       });
   }
 });
@@ -91,7 +91,7 @@ app.post("/user", async (req, res) => {
       error: "Please enter the user email id",
       page: "user",
     };
-    res.render("login", context);
+    res.render("login.ejs", context);
   } else {
     const per = (await getData("persons"))[0]["name"];
 
@@ -103,7 +103,7 @@ app.post("/user", async (req, res) => {
           showData: false,
         };
 
-        res.render("users", context);
+        res.render("users.ejs", context);
       })
       .catch((err) => {
         const context = {
@@ -111,7 +111,7 @@ app.post("/user", async (req, res) => {
           error: "wrong password",
           page: "user",
         };
-        res.render("login", context);
+        res.render("login.ejs", context);
       });
   }
 });
@@ -160,7 +160,7 @@ app.post("/addData", async (req, res) => {
     showData: true,
   };
 
-  res.render("users", context);
+  res.render("users.ejs", context);
 });
 
 
@@ -171,7 +171,7 @@ app.get("/getAllData", async (req, res) => {
 
   getAllData(startDate,endDate)
     .then((data) => {
-      res.render("admin", { entries: data });
+      res.render("admin.ejs", { entries: data });
     })
     .catch((err) => {
       context = {
@@ -179,7 +179,7 @@ app.get("/getAllData", async (req, res) => {
         admin: admin,
       };
 
-      res.render("index", context);
+      res.render("index.ejs", context);
     });
 });
 
