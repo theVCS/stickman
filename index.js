@@ -45,13 +45,24 @@ function fullUrl(req) {
 }
 
 const downloadPdf = async (host, startDate, endDate) => {
-  // let options = {};
+  const executablePath =
+    process.env.PUPPETEER_EXECUTABLE_PATH ||
+    (process.pkg
+      ? path.join(
+          path.dirname(process.execPath),
+          "puppeteer",
+          ...puppeteer.executablePath().split(path.sep).slice(6) // /snapshot/project/node_modules/puppeteer/.local-chromium
+        )
+      : puppeteer.executablePath());
 
   const browser = await puppeteer.launch({
-    executablePath: "chrome.exe",
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    executablePath,
   });
+  // const browser = await puppeteer.launch({
+  //   executablePath: "chrome.exe",
+  //   headless: true,
+  //   args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  // });
   const page = await browser.newPage();
 
   let website_url = `${host}/getPDF`;
