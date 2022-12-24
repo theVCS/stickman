@@ -95,7 +95,7 @@ const getAllData = async (startdate = "", enddate = "") => {
         helper.push(number);
         helper.push(entry["date_added"].toDate());
 
-        if (startdate=="" || (helper[3]-startdate >= 0 && helper[3]- enddate <= 0)) {
+        if (!startdate || (helper[3]-startdate >= 0 && helper[3]- enddate <= 0)) {
           allEntries.push(helper);
         }
       });

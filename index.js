@@ -1,9 +1,14 @@
 const express = require("express");
-const app = express();
 const users = require("./public/json/users.json");
 const admin = require("./public/json/admin.json");
 const { Timestamp } = require("firebase/firestore");
+const puppeteer = require("puppeteer");
 const path = require("path");
+const os = require("os");
+const url = require("url");
+const PORT = 4000;
+
+const app = express();
 
 const {
   insert,
@@ -13,13 +18,40 @@ const {
   getAllData,
 } = require("./database");
 const { render } = require("ejs");
+const { start } = require("repl");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname,"public")));
+app.use(express.static(path.join(__dirname, "public")));
 
-app.set('views', path.join(__dirname, 'views'));
+app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+
+function fullUrl(req) {
+  return url.format({
+    protocol: req.protocol,
+    host: req.get("host"),
+  });
+}
+
+const downloadPdf = async (host, startDate, endDate) => {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  let website_url = `${host}/getPDF`;
+  if (startDate != "")
+    website_url = `${host}/getPDF?startDate=${startDate}&endDate=${endDate}`;
+
+  await page.goto(website_url, { waitUntil: "networkidle0" });
+  await page.emulateMediaType("screen");
+  const pdf = await page.pdf({
+    path: "./public/pdf/result.pdf",
+    margin: { top: "100px", right: "50px", bottom: "100px", left: "50px" },
+    printBackground: true,
+    format: "A4",
+  });
+  await browser.close();
+};
 
 app.get("/", (req, res) => {
   context = {
@@ -143,7 +175,6 @@ app.post("/addData", async (req, res) => {
   let cnt = 10001;
 
   entries.forEach((mp) => {
-    console.log(mp);
     mp["numbers"].forEach((num) => {
       let helper = new Array();
       helper.push(cnt);
@@ -184,5 +215,41 @@ app.get("/getAllData", async (req, res) => {
     });
 });
 
-app.listen(4000);
+app.get("/downloadPdf", (req, res) => {
+  let startDate = "";
+  let endDate = "";
+  if (req.query.startDate) startDate = req.query.startDate;
+  if (req.query.endDate) {
+    endDate = req.query.endDate;
+  }
+  downloadPdf(fullUrl(req), startDate, endDate).then(() => {
+    res.send("pdf Downloaded");
+  });
+});
+
+app.get("/getPDF", async (req, res) => {
+  let startDate = "";
+  let endDate = "";
+  if (req.query.startDate) startDate = new Date(req.query.startDate);
+  if (req.query.endDate) {
+    endDate = new Date(req.query.endDate);
+    endDate.setDate(endDate.getDate() + 1);
+  }
+
+  getAllData(startDate, endDate)
+    .then((data) => {
+      // downloadPdf(startDate,endDate);
+      res.render("pdfData", { entries: data });
+    })
+    .catch((err) => {
+      context = {
+        users: users,
+        admin: admin,
+      };
+
+      res.render("index", context);
+    });
+});
+
+app.listen(PORT);
 module.exports = app;
