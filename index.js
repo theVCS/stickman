@@ -6,7 +6,7 @@ const { Timestamp } = require("firebase/firestore");
 const edgeChromium = require("chrome-aws-lambda");
 // const puppeteer = require("puppeteer");
 const puppeteer = require("puppeteer-core");
-const pdfLocation = "./tmp/result.pdf"
+const pdfLocation = path.join(__dirname, "./tmp/result.pdf");
 
 const path = require("path");
 const url = require("url");
