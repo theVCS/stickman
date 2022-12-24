@@ -3,32 +3,16 @@ const users = require("./public/json/users.json");
 const admin = require("./public/json/admin.json");
 const { Timestamp } = require("firebase/firestore");
 
-let chrome = {};
-let puppeteer;
-
-if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-  chrome = require("chrome-aws-lambda");
-  puppeteer = require("puppeteer-core");
-} else {
-  puppeteer = require("puppeteer");
-}
+const edgeChromium = require("chrome-aws-lambda");
+const puppeteer = require("puppeteer-core");
 
 const path = require("path");
-const os = require("os");
 const url = require("url");
 const PORT = 4000;
 
 const app = express();
 
-const {
-  insert,
-  getData,
-  createUser,
-  signInUser,
-  getAllData,
-} = require("./database");
-const { render } = require("ejs");
-const { start } = require("repl");
+const { insert, getData, signInUser, getAllData } = require("./database");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -45,26 +29,15 @@ function fullUrl(req) {
 }
 
 const downloadPdf = async (host, startDate, endDate) => {
-  const executablePath =
-    process.env.PUPPETEER_EXECUTABLE_PATH ||
-    (process.pkg
-      ? path.join(
-          path.dirname(process.execPath),
-          "puppeteer",
-          ...puppeteer.executablePath().split(path.sep).slice(6) // /snapshot/project/node_modules/puppeteer/.local-chromium
-        )
-      : puppeteer.executablePath());
+  const executablePath = await edgeChromium.executablePath;
 
   const browser = await puppeteer.launch({
     executablePath,
+    args: edgeChromium.args,
+    headless: false,
   });
-  // const browser = await puppeteer.launch({
-  //   executablePath: "chrome.exe",
-  //   headless: true,
-  //   args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  // });
-  const page = await browser.newPage();
 
+  const page = await browser.newPage();
   let website_url = `${host}/getPDF`;
   if (startDate != "")
     website_url = `${host}/getPDF?startDate=${startDate}&endDate=${endDate}`;
