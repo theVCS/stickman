@@ -6,8 +6,8 @@ const url = require("url");
 const fs = require("fs");
 const { Timestamp } = require("firebase/firestore");
 const edgeChromium = require("chrome-aws-lambda");
-// const puppeteer = require("puppeteer-core");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
+// const puppeteer = require("puppeteer");
 
 const pdfLocation = path.join(__dirname, "./tmp/result10.pdf");
 const PORT = 4000;
