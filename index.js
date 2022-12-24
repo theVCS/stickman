@@ -2,7 +2,17 @@ const express = require("express");
 const users = require("./public/json/users.json");
 const admin = require("./public/json/admin.json");
 const { Timestamp } = require("firebase/firestore");
-const puppeteer = require("puppeteer");
+
+let chrome = {};
+let puppeteer;
+
+if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+  puppeteer = require("puppeteer-core");
+} else {
+  puppeteer = require("puppeteer");
+}
+
+
 const path = require("path");
 const os = require("os");
 const url = require("url");
