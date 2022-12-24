@@ -4,6 +4,7 @@ const admin = require("./public/json/admin.json");
 const { Timestamp } = require("firebase/firestore");
 
 const edgeChromium = require("chrome-aws-lambda");
+// const puppeteer = require("puppeteer");
 const puppeteer = require("puppeteer-core");
 
 const path = require("path");
@@ -17,7 +18,6 @@ const { insert, getData, signInUser, getAllData } = require("./database");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "tmp")));
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -48,7 +48,7 @@ const downloadPdf = async (host, startDate, endDate) => {
   await page.goto(website_url, { waitUntil: "networkidle0" });
   await page.emulateMediaType("screen");
   const pdf = await page.pdf({
-    path: "./tmp/result.pdf",
+    path: "./public/pdf/result.pdf",
     margin: { top: "100px", right: "50px", bottom: "100px", left: "50px" },
     printBackground: true,
     format: "A4",
@@ -230,7 +230,7 @@ app.get("/downloadPdf", (req, res) => {
     endDate = req.query.endDate;
   }
   downloadPdf(fullUrl(req), startDate, endDate).then(() => {
-    res.download("tmp/result.pdf");
+    res.download("./public/pdf/result.pdf");
   });
 });
 
