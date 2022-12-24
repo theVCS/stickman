@@ -111,14 +111,8 @@
             let URL = `${window.location.origin}/downloadPdf`;
 
             if ($("#startDate").val() && $("#endDate").val()) {
-                URL = url + `?startDate=${$("#startDate").val()}&endDate=${$("#endDate").val()}`;
+                URL = URL + `?startDate=${$("#startDate").val()}&endDate=${$("#endDate").val()}`;
             }
-
-            // $.get(url).then((data) => {
-            //     downloadURI("/tmp/result.pdf", "entries.pdf")
-            //     document.getElementById("downloadBtn").innerHTML = "Download"
-            //     document.getElementById("downloadBtn").disabled = false;
-            // })
 
             $.ajax({
                 type: "GET",
