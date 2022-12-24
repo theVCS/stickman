@@ -108,17 +108,44 @@
 </div>`;
             document.getElementById("downloadBtn").disabled = true;
 
-            let url = `${window.location.origin}/downloadPdf`;
+            let URL = `${window.location.origin}/downloadPdf`;
 
             if ($("#startDate").val() && $("#endDate").val()) {
-                url = url + `?startDate=${$("#startDate").val()}&endDate=${$("#endDate").val()}`;
+                URL = url + `?startDate=${$("#startDate").val()}&endDate=${$("#endDate").val()}`;
             }
 
-            $.get(url).then((data) => {
-                downloadURI("/tmp/result.pdf", "entries.pdf")
-                document.getElementById("downloadBtn").innerHTML = "Download"
-                document.getElementById("downloadBtn").disabled = false;
-            })
+            // $.get(url).then((data) => {
+            //     downloadURI("/tmp/result.pdf", "entries.pdf")
+            //     document.getElementById("downloadBtn").innerHTML = "Download"
+            //     document.getElementById("downloadBtn").disabled = false;
+            // })
+
+            $.ajax({
+                type: "GET",
+                url: URL,
+                xhrFields: {
+                    responseType: "blob",
+                },
+                success: function (data) {
+                    var a = document.createElement("a");
+                    var url = window.URL.createObjectURL(data);
+                    a.href = url;
+
+                    a.download = "entries.pdf";
+                    document.body.append(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+
+                    document.getElementById("downloadBtn").innerHTML = "Download"
+                    document.getElementById("downloadBtn").disabled = false;
+
+                },
+                error: function (result) {
+                    alert("error");
+                },
+            });
+
         }
     </script>
 

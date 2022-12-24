@@ -32,11 +32,13 @@ function fullUrl(req) {
 const downloadPdf = async (host, startDate, endDate) => {
   const executablePath = await edgeChromium.executablePath;
 
-  const browser = await puppeteer.launch({
-    executablePath,
-    args: edgeChromium.args,
-    headless: false,
-  });
+  // const browser = await puppeteer.launch({
+  //   executablePath,
+  //   args: edgeChromium.args,
+  //   headless: false,
+  // });
+
+  const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
   let website_url = `${host}/getPDF`;
@@ -228,7 +230,7 @@ app.get("/downloadPdf", (req, res) => {
     endDate = req.query.endDate;
   }
   downloadPdf(fullUrl(req), startDate, endDate).then(() => {
-    res.send("pdf Downloaded");
+    res.download("tmp/result.pdf");
   });
 });
 
