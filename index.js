@@ -17,6 +17,7 @@ const { insert, getData, signInUser, getAllData } = require("./database");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "temp")));
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -45,7 +46,7 @@ const downloadPdf = async (host, startDate, endDate) => {
   await page.goto(website_url, { waitUntil: "networkidle0" });
   await page.emulateMediaType("screen");
   const pdf = await page.pdf({
-    path: "./public/pdf/result.pdf",
+    path: "./temp/result.pdf",
     margin: { top: "100px", right: "50px", bottom: "100px", left: "50px" },
     printBackground: true,
     format: "A4",
