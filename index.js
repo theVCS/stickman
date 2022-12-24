@@ -5,9 +5,8 @@ const path = require("path");
 const url = require("url");
 const fs = require("fs");
 const { Timestamp } = require("firebase/firestore");
-const edgeChromium = require("chrome-aws-lambda");
-const puppeteer = require("puppeteer-core");
-// const puppeteer = require("puppeteer");
+const chrome = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
 
 const pdfLocation = path.join(__dirname, "./tmp/result1.pdf");
 const PORT = 4000;
@@ -30,14 +29,14 @@ function fullUrl(req) {
 }
 
 const downloadPdf = async (host, startDate, endDate) => {
-  const executablePath = await edgeChromium.executablePath;
-
-  const browser = await puppeteer.launch({
-    executablePath,
-    args: edgeChromium.args,
-    headless: false,
-  });
-  // const browser = await puppeteer.launch();
+  const options = {
+    args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
+    defaultViewport: chrome.defaultViewport,
+    executablePath: await chrome.executablePath,
+    headless: true,
+    ignoreHTTPSErrors: true,
+  };
+  const browser = await puppeteer.launch(options);
 
   const page = await browser.newPage();
   let website_url = `${host}/getPDF`;
