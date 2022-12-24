@@ -32,7 +32,8 @@ function fullUrl(req) {
 
 const downloadPdf = async (host, startDate, endDate) => {
   const executablePath = await edgeChromium.executablePath;
-
+  fs.chmod(pdfLocation, 0o600);
+  
   const browser = await puppeteer.launch({
     executablePath,
     args: edgeChromium.args,
