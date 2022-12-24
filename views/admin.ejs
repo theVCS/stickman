@@ -115,9 +115,9 @@
             }
 
             $.get(url).then((data) => {
-                downloadURI("/temp/result.pdf", "entries.pdf")
-            document.getElementById("downloadBtn").innerHTML = "Download"
-            document.getElementById("downloadBtn").disabled = false;
+                downloadURI("/tmp/result.pdf", "entries.pdf")
+                document.getElementById("downloadBtn").innerHTML = "Download"
+                document.getElementById("downloadBtn").disabled = false;
             })
         }
     </script>

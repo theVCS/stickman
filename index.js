@@ -46,7 +46,7 @@ const downloadPdf = async (host, startDate, endDate) => {
   await page.goto(website_url, { waitUntil: "networkidle0" });
   await page.emulateMediaType("screen");
   const pdf = await page.pdf({
-    path: "./temp/result.pdf",
+    path: "./tmp/result.pdf",
     margin: { top: "100px", right: "50px", bottom: "100px", left: "50px" },
     printBackground: true,
     format: "A4",
