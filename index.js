@@ -32,13 +32,13 @@ function fullUrl(req) {
 const downloadPdf = async (host, startDate, endDate) => {
   const executablePath = await edgeChromium.executablePath;
 
-  // const browser = await puppeteer.launch({
-  //   executablePath,
-  //   args: edgeChromium.args,
-  //   headless: false,
-  // });
+  const browser = await puppeteer.launch({
+    executablePath,
+    args: edgeChromium.args,
+    headless: false,
+  });
 
-  const browser = await puppeteer.launch();
+  // const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
   let website_url = `${host}/getPDF`;
