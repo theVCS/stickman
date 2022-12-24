@@ -9,7 +9,7 @@ const edgeChromium = require("chrome-aws-lambda");
 const puppeteer = require("puppeteer-core");
 // const puppeteer = require("puppeteer");
 
-const pdfLocation = path.join(__dirname, "./tmp/result.pdf");
+const pdfLocation = path.join(__dirname, "./tmp/result10.pdf");
 
 const PORT = 4000;
 
@@ -33,15 +33,12 @@ function fullUrl(req) {
 
 const downloadPdf = async (host, startDate, endDate) => {
   const executablePath = await edgeChromium.executablePath;
-  fs.chmod(pdfLocation, 0o600);
 
   const browser = await puppeteer.launch({
     executablePath,
     args: edgeChromium.args,
     headless: false,
   });
-
-  // const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
   let website_url = `${host}/getPDF`;
