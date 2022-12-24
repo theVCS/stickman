@@ -16,7 +16,7 @@ const { render } = require("ejs");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
+app.use(express.static(path.json(__dirname,"public")));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
