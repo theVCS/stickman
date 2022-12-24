@@ -3,13 +3,15 @@ const users = require("./public/json/users.json");
 const admin = require("./public/json/admin.json");
 const { Timestamp } = require("firebase/firestore");
 
-const puppeteer = require("puppeteer");
+let chrome = {};
+let puppeteer;
 
-// if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-//   puppeteer = require("puppeteer-core");
-// } else {
-// }
-
+if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+  chrome = require("chrome-aws-lambda");
+  puppeteer = require("puppeteer-core");
+} else {
+  puppeteer = require("puppeteer");
+}
 
 const path = require("path");
 const os = require("os");
@@ -43,7 +45,19 @@ function fullUrl(req) {
 }
 
 const downloadPdf = async (host, startDate, endDate) => {
-  const browser = await puppeteer.launch();
+  let options = {};
+
+  if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+    options = {
+      args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
+      defaultViewport: chrome.defaultViewport,
+      executablePath: await chrome.executablePath,
+      headless: true,
+      ignoreHTTPSErrors: true,
+    };
+  }
+
+  const browser = await puppeteer.launch(options);
   const page = await browser.newPage();
 
   let website_url = `${host}/getPDF`;
