@@ -3,6 +3,7 @@ const app = express();
 const users = require("./public/json/users.json");
 const admin = require("./public/json/admin.json");
 const { Timestamp } = require("firebase/firestore");
+const path = require("path");
 
 const {
   insert,
@@ -17,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-app.set('views', './views');
+app.set('views', path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
@@ -26,7 +27,7 @@ app.get("/", (req, res) => {
     admin: admin,
   };
 
-  res.render("index.ejs", context);
+  res.render("index", context);
 });
 
 app.get("/login/:worker", (req, res) => {
@@ -35,7 +36,7 @@ app.get("/login/:worker", (req, res) => {
     page: req.params["worker"],
   };
 
-  res.render("login.ejs", context);
+  res.render("login", context);
 });
 
 app.post("/admin", async (req, res) => {
@@ -48,13 +49,13 @@ app.post("/admin", async (req, res) => {
       error: "Please enter the admin email id",
       page: "admin",
     };
-    res.render("login.ejs", context);
+    res.render("login", context);
   } else {
     signInUser(email, password)
       .then((userdata) => {
         getAllData()
           .then((data) => {
-            res.render("admin.ejs", { email: email, entries: data });
+            res.render("admin", { email: email, entries: data });
           })
           .catch((err) => {
             context = {
@@ -62,7 +63,7 @@ app.post("/admin", async (req, res) => {
               admin: admin,
             };
 
-            res.render("index.ejs", context);
+            res.render("index", context);
           });
       })
       .catch((err) => {
@@ -71,7 +72,7 @@ app.post("/admin", async (req, res) => {
           error: "wrong password",
           page: "admin",
         };
-        res.render("login.ejs", context);
+        res.render("login", context);
       });
   }
 });
@@ -92,7 +93,7 @@ app.post("/user", async (req, res) => {
       error: "Please enter the user email id",
       page: "user",
     };
-    res.render("login.ejs", context);
+    res.render("login", context);
   } else {
     const per = (await getData("persons"))[0]["name"];
 
@@ -104,7 +105,7 @@ app.post("/user", async (req, res) => {
           showData: false,
         };
 
-        res.render("users.ejs", context);
+        res.render("users", context);
       })
       .catch((err) => {
         const context = {
@@ -112,7 +113,7 @@ app.post("/user", async (req, res) => {
           error: "wrong password",
           page: "user",
         };
-        res.render("login.ejs", context);
+        res.render("login", context);
       });
   }
 });
@@ -161,18 +162,17 @@ app.post("/addData", async (req, res) => {
     showData: true,
   };
 
-  res.render("users.ejs", context);
+  res.render("users", context);
 });
-
 
 app.get("/getAllData", async (req, res) => {
   let startDate = new Date(req.query.startDate);
   let endDate = new Date(req.query.endDate);
-  endDate.setDate(endDate.getDate() + 1)
+  endDate.setDate(endDate.getDate() + 1);
 
-  getAllData(startDate,endDate)
+  getAllData(startDate, endDate)
     .then((data) => {
-      res.render("admin.ejs", { entries: data });
+      res.render("admin", { entries: data });
     })
     .catch((err) => {
       context = {
@@ -180,10 +180,9 @@ app.get("/getAllData", async (req, res) => {
         admin: admin,
       };
 
-      res.render("index.ejs", context);
+      res.render("index", context);
     });
 });
-
 
 app.listen(4000);
 module.exports = app;
