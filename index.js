@@ -180,10 +180,14 @@ app.post("/addData", async (req, res) => {
       helper.push(cnt);
       helper.push(mp["name"]);
       helper.push(num);
-      helper.push(mp["date_added"].toDate().toDateString());
+      helper.push(mp["date_added"].toDate());
       cnt = cnt + 1;
       allEntries.push(helper);
     });
+  });
+
+  allEntries.sort((a, b) => {
+    return a[3] - b[3];
   });
 
   const context = {
