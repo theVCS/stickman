@@ -6,6 +6,7 @@ const { Timestamp } = require("firebase/firestore");
 const edgeChromium = require("chrome-aws-lambda");
 // const puppeteer = require("puppeteer");
 const puppeteer = require("puppeteer-core");
+const pdfLocation = "./tmp/result.pdf"
 
 const path = require("path");
 const url = require("url");
@@ -48,7 +49,7 @@ const downloadPdf = async (host, startDate, endDate) => {
   await page.goto(website_url, { waitUntil: "networkidle0" });
   await page.emulateMediaType("screen");
   const pdf = await page.pdf({
-    path: "./public/pdf/result.pdf",
+    path: pdfLocation,
     margin: { top: "100px", right: "50px", bottom: "100px", left: "50px" },
     printBackground: true,
     format: "A4",
@@ -230,7 +231,7 @@ app.get("/downloadPdf", (req, res) => {
     endDate = req.query.endDate;
   }
   downloadPdf(fullUrl(req), startDate, endDate).then(() => {
-    res.download("./public/pdf/result.pdf");
+    res.download(pdfLocation);
   });
 });
 
