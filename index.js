@@ -8,8 +8,8 @@ const { Timestamp } = require("firebase/firestore");
 const chrome = require('chrome-aws-lambda');
 const puppeteer = require('puppeteer-core');
 
-const pdfLocation = path.join(__dirname, "./tmp/result1.pdf");
-const PORT = 4000;
+const pdfLocation = path.join(__dirname, "./tmp/result.pdf");
+const PORT = 1337;
 const app = express();
 
 const { insert, getData, signInUser, getAllData } = require("./database");
@@ -229,7 +229,10 @@ app.get("/downloadPdf", (req, res) => {
   }
   downloadPdf(fullUrl(req), startDate, endDate).then(() => {
     res.download(pdfLocation);
-  });
+  }).catch(err=>{
+    res.download(path.join(__dirname, "./tmp/result.pdf"));
+
+  })
 });
 
 app.get("/getPDF", async (req, res) => {
