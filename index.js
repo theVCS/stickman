@@ -3,14 +3,12 @@ const users = require("./public/json/users.json");
 const admin = require("./public/json/admin.json");
 const { Timestamp } = require("firebase/firestore");
 
-let chrome = {};
-let puppeteer;
+const puppeteer = require("puppeteer");
 
-if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-  puppeteer = require("puppeteer-core");
-} else {
-  puppeteer = require("puppeteer");
-}
+// if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+//   puppeteer = require("puppeteer-core");
+// } else {
+// }
 
 
 const path = require("path");
