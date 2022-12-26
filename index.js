@@ -9,7 +9,8 @@ const fs = require("fs");
 const { getUserInfo } = require("./helper");
 
 const app = express();
-const PORT = 1337;
+const PORT = 8080;
+const HOST = '0.0.0.0';
 
 const {
   insert,
@@ -239,5 +240,8 @@ app.post("/getPDF", async (req, res) => {
   res.download(PDFlocation);
 });
 
-app.listen(PORT);
+app.listen(PORT, HOST, () => {
+  console.log(`Running on http://${HOST}:${PORT}`);
+});
+
 module.exports = app;
