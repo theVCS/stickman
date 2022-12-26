@@ -9,8 +9,12 @@ const fs = require("fs");
 const { getUserInfo } = require("./helper");
 
 const app = express();
-const PORT = 8080;
-const HOST = '0.0.0.0';
+const PORT = 3000;
+// const HOST = '0.0.0.0';
+
+app.listen(PORT, () => {
+  console.log(`Running on http://${HOST}:${PORT}`);
+});
 
 const {
   insert,
@@ -38,17 +42,17 @@ app.get("/", (req, res) => {
   res.render("index", context);
 });
 
-app.post('/getAllUser',(req,res)=>{
+app.post("/getAllUser", (req, res) => {
   let usernames = new Array();
 
-  users.forEach(user=>{
+  users.forEach((user) => {
     usernames.push(user.username);
-  })
+  });
 
   res.send({
     users: usernames,
-  })
-})
+  });
+});
 
 app.get("/login/:worker", (req, res) => {
   const context = {
@@ -240,8 +244,5 @@ app.post("/getPDF", async (req, res) => {
   res.download(PDFlocation);
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`Running on http://${HOST}:${PORT}`);
-});
 
 module.exports = app;
