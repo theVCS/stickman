@@ -1,22 +1,32 @@
 [
     {
+        "username": "user1",
         "email": "emailId1@stickman.com",
-        "password": "password1@12345"
+        "password": "password1@12345",
+        "docId": "UcG7lvsa1ZaVlDKkRXZX"
     },
     {
+        "username": "user2",
         "email": "emailId2@stickman.com",
-        "password": "password2@12345"
+        "password": "password2@12345",
+        "docId": "8MyYsdtgzNd6D0BIuOpN"
     },
     {
+        "username": "user3",
         "email": "emailId3@stickman.com",
-        "password": "password3@12345"
+        "password": "password3@12345",
+        "docId": "l5yyoxKigpTJZZtgRZX2"
     },
     {
+        "username": "user4",
         "email": "emailId4@stickman.com",
-        "password": "password4@12345"
+        "password": "password4@12345",
+        "docId": "wWB6KAX91LxNbgzEnX6n"
     },
     {
+        "username": "user5",
         "email": "emailId5@stickman.com",
-        "password": "password5@12345"
+        "password": "password5@12345",
+        "docId": "kP81HEWEZHiT2fwJHkVW"
     }
 ]

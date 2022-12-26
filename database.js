@@ -4,11 +4,9 @@ const {
   addDoc,
   collection,
   getDocs,
-  query,
-  where,
   setDoc,
   doc,
-  updateDoc,
+  getDoc,
 } = require("firebase/firestore");
 
 const {
@@ -62,13 +60,9 @@ const createUser = (email, pass) => {
   const auth = getAuth();
   createUserWithEmailAndPassword(auth, email, pass)
     .then((userCredential) => {
-      // const user = userCredential.user;
       console.log("signed");
     })
     .catch((error) => {
-      // const errorCode = error.code;
-      // const errorMessage = error.message;
-      // ..
       console.log("not signed");
     });
 };
@@ -79,26 +73,26 @@ const signInUser = (email, pass) => {
 };
 
 const getAllData = async (startdate = "", enddate = "") => {
-  let cnt = 10000;
   let allEntries = [];
 
   for (let index = 0; index < users.length; index++) {
-    const coll = users[index].email;
+    const coll = users[index].username;
 
     const entries = await getData(coll);
     entries.forEach((entry) => {
-      entry["numbers"].forEach((number) => {
-        let helper = new Array();
-        cnt = cnt + 1;
-        helper.push(cnt);
-        helper.push(entry["name"]);
-        helper.push(number);
-        helper.push(entry["date_added"].toDate());
+      let helper = new Array();
+      if (entry["count"]) return;
+      helper.push(entry["id"]);
+      helper.push(entry["name"]);
+      helper.push(entry["number"]);
+      helper.push(entry["date_added"].toDate());
 
-        if (!startdate || (helper[3]-startdate >= 0 && helper[3]- enddate <= 0)) {
-          allEntries.push(helper);
-        }
-      });
+      if (
+        !startdate ||
+        (helper[3] - startdate >= 0 && helper[3] - enddate <= 0)
+      ) {
+        allEntries.push(helper);
+      }
     });
   }
 
@@ -108,4 +102,55 @@ const getAllData = async (startdate = "", enddate = "") => {
 
   return allEntries;
 };
-module.exports = { insert, getData, createUser, signInUser, getAllData };
+
+const getAllUserData = async (username) => {
+  let allEntries = new Array();
+  const entries = await getData(username);
+
+  entries.forEach((mp) => {
+    let helper = new Array();
+    if (mp["count"]) return;
+    helper.push(mp["id"]);
+    helper.push(mp["name"]);
+    helper.push(mp["number"]);
+    helper.push(mp["date_added"].toDate());
+    allEntries.push(helper);
+  });
+
+  allEntries.sort((a, b) => {
+    return a[0] - b[0];
+  });
+
+  return allEntries;
+};
+
+const getCount = async (username, docId) => {
+  const docRef = doc(db, username, docId);
+  const docSnap = await getDoc(docRef);
+  return docSnap.data()["count"];
+};
+
+function updateConter(username, docId, count) {
+  const docRef = doc(db, username, docId);
+  const data = {
+    count: count,
+  };
+  setDoc(docRef, data)
+    .then((docRef) => {
+      console.log("--------------- Counter Updated -----------");
+    })
+    .catch((error) => {
+      console.log("---------------- Unable to Update Counter --------------");
+    });
+}
+
+module.exports = {
+  insert,
+  getData,
+  createUser,
+  signInUser,
+  getAllData,
+  getCount,
+  updateConter,
+  getAllUserData,
+};

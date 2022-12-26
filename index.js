@@ -2,17 +2,25 @@ const express = require("express");
 const users = require("./public/json/users.json");
 const admin = require("./public/json/admin.json");
 const path = require("path");
-const url = require("url");
-const fs = require("fs");
 const { Timestamp } = require("firebase/firestore");
-const chrome = require('chrome-aws-lambda');
-const puppeteer = require('puppeteer-core');
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+
+const { fullUrl, getUserInfo, makeid } = require("./helper");
 
 const pdfLocation = path.join(__dirname, "./tmp/result.pdf");
-const PORT = 1337;
 const app = express();
+const PORT = 1337;
 
-const { insert, getData, signInUser, getAllData } = require("./database");
+const {
+  insert,
+  getData,
+  signInUser,
+  getAllData,
+  getCount,
+  updateConter,
+  getAllUserData,
+} = require("./database");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -20,39 +28,6 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
-
-function fullUrl(req) {
-  return url.format({
-    protocol: req.protocol,
-    host: req.get("host"),
-  });
-}
-
-const downloadPdf = async (host, startDate, endDate) => {
-  const options = {
-    args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
-    defaultViewport: chrome.defaultViewport,
-    executablePath: await chrome.executablePath,
-    headless: true,
-    ignoreHTTPSErrors: true,
-  };
-  const browser = await puppeteer.launch(options);
-
-  const page = await browser.newPage();
-  let website_url = `${host}/getPDF`;
-  if (startDate != "")
-    website_url = `${host}/getPDF?startDate=${startDate}&endDate=${endDate}`;
-
-  await page.goto(website_url, { waitUntil: "networkidle0" });
-  await page.emulateMediaType("screen");
-  const pdf = await page.pdf({
-    path: pdfLocation,
-    margin: { top: "100px", right: "50px", bottom: "100px", left: "50px" },
-    printBackground: true,
-    format: "A4",
-  });
-  await browser.close();
-};
 
 app.get("/", (req, res) => {
   context = {
@@ -62,6 +37,18 @@ app.get("/", (req, res) => {
 
   res.render("index", context);
 });
+
+app.post('/getAllUser',(req,res)=>{
+  let usernames = new Array();
+
+  users.forEach(user=>{
+    usernames.push(user.username);
+  })
+
+  res.send({
+    users: usernames,
+  })
+})
 
 app.get("/login/:worker", (req, res) => {
   const context = {
@@ -88,7 +75,12 @@ app.post("/admin", async (req, res) => {
       .then((userdata) => {
         getAllData()
           .then((data) => {
-            res.render("admin", { email: email, entries: data });
+            res.render("admin", {
+              email: email,
+              entries: data,
+              startDate: "",
+              endDate: "",
+            });
           })
           .catch((err) => {
             context = {
@@ -115,9 +107,13 @@ app.post("/user", async (req, res) => {
   const password = req.body.password;
 
   let flag = false;
+  let username = "";
 
   users.forEach((user) => {
-    if (user["email"] == email) flag = true;
+    if (user["email"] == email) {
+      flag = true;
+      username = user["username"];
+    }
   });
 
   if (flag == false) {
@@ -129,13 +125,15 @@ app.post("/user", async (req, res) => {
     res.render("login", context);
   } else {
     const per = (await getData("persons"))[0]["name"];
+    const allEntries = await getAllUserData(username);
 
     signInUser(email, password)
       .then((userdata) => {
         const context = {
-          email: email,
           persons: per,
-          showData: false,
+          username: username,
+          entries: allEntries,
+          showData: true,
         };
 
         res.render("users", context);
@@ -152,48 +150,35 @@ app.post("/user", async (req, res) => {
 });
 
 app.post("/addData", async (req, res) => {
-  const email = req.body.email;
+  const username = req.body.username;
   const name = req.body.name;
-  let numbers = [];
-  delete req.body.email;
+
   delete req.body.name;
+  delete req.body.username;
 
-  for (const key in req.body) numbers.push(req.body[key]);
+  user = getUserInfo(username);
+  const dat = getData(username);
+  let cnt = await getCount(username, user.docId);
 
-  data = {
-    name: name,
-    numbers: numbers,
-    date_added: Timestamp.fromDate(new Date()),
-  };
+  for (const key in req.body) {
+    cnt = cnt + 1;
+    data = {
+      id: cnt,
+      name: name,
+      number: req.body[key],
+      date_added: Timestamp.fromDate(new Date()),
+    };
+    insert(username, data);
+  }
 
-  insert(email, data);
+  updateConter(username, user.docId, cnt);
+
   const per = (await getData("persons"))[0]["name"];
-
-  // getting all all feed
-  let allEntries = new Array();
-
-  const entries = await getData(email);
-  let cnt = 10001;
-
-  entries.forEach((mp) => {
-    mp["numbers"].forEach((num) => {
-      let helper = new Array();
-      helper.push(cnt);
-      helper.push(mp["name"]);
-      helper.push(num);
-      helper.push(mp["date_added"].toDate());
-      cnt = cnt + 1;
-      allEntries.push(helper);
-    });
-  });
-
-  allEntries.sort((a, b) => {
-    return a[3] - b[3];
-  });
+  const allEntries = await getAllUserData(username);
 
   const context = {
-    email: email,
     persons: per,
+    username: username,
     entries: allEntries,
     showData: true,
   };
@@ -208,7 +193,11 @@ app.get("/getAllData", async (req, res) => {
 
   getAllData(startDate, endDate)
     .then((data) => {
-      res.render("admin", { entries: data });
+      res.render("admin", {
+        entries: data,
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+      });
     })
     .catch((err) => {
       context = {
@@ -220,43 +209,35 @@ app.get("/getAllData", async (req, res) => {
     });
 });
 
-app.get("/downloadPdf", (req, res) => {
-  let startDate = "";
-  let endDate = "";
-  if (req.query.startDate) startDate = req.query.startDate;
-  if (req.query.endDate) {
-    endDate = req.query.endDate;
-  }
-  downloadPdf(fullUrl(req), startDate, endDate).then(() => {
-    res.download(pdfLocation);
-  }).catch(err=>{
-    res.download(path.join(__dirname, "./tmp/result.pdf"));
+app.post("/savePDF", async (req, res) => {
+  const username = req.body.username;
+  const directory = path.join(__dirname, "tmp");
+  const location = path.join(directory, `${username}.pdf`);
+  console.log(location);
 
-  })
+  const stream = fs.createWriteStream(location);
+  const doc = new PDFDocument();
+  doc.pipe(stream);
+  const description = `This data belongs to ${username}`;
+  doc.fontSize(27).text(description, 100, 100);
+
+  const datum = await getAllUserData(username);
+
+  for (const data of datum) {
+    const text = `Id: ${data[0]}\nName: ${data[1]}\nNumber: ${data[2]}\nDate: ${data[3]}`;
+    doc.addPage().fontSize(15).text(text, 100, 100);
+  }
+
+  doc.end();
+
+  stream.on("finish", function () {
+    res.send({ success: true, location: location });
+  });
 });
 
-app.get("/getPDF", async (req, res) => {
-  let startDate = "";
-  let endDate = "";
-  if (req.query.startDate) startDate = new Date(req.query.startDate);
-  if (req.query.endDate) {
-    endDate = new Date(req.query.endDate);
-    endDate.setDate(endDate.getDate() + 1);
-  }
-
-  getAllData(startDate, endDate)
-    .then((data) => {
-      // downloadPdf(startDate,endDate);
-      res.render("pdfData", { entries: data });
-    })
-    .catch((err) => {
-      context = {
-        users: users,
-        admin: admin,
-      };
-
-      res.render("index", context);
-    });
+app.post("/getPDF", async (req, res) => {
+  const PDFlocation = req.body.location;
+  res.download(PDFlocation);
 });
 
 app.listen(PORT);
