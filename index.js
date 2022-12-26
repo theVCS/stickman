@@ -6,9 +6,8 @@ const { Timestamp } = require("firebase/firestore");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 
-const { fullUrl, getUserInfo, makeid } = require("./helper");
+const { getUserInfo } = require("./helper");
 
-const pdfLocation = path.join(__dirname, "./tmp/result.pdf");
 const app = express();
 const PORT = 1337;
 
@@ -212,8 +211,8 @@ app.get("/getAllData", async (req, res) => {
 app.post("/savePDF", async (req, res) => {
   const username = req.body.username;
   const directory = path.join(__dirname, "tmp");
+  // const directory = "/tmp";
   const location = path.join(directory, `${username}.pdf`);
-  console.log(location);
 
   const stream = fs.createWriteStream(location);
   const doc = new PDFDocument();
