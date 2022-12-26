@@ -210,8 +210,8 @@ app.get("/getAllData", async (req, res) => {
 
 app.post("/savePDF", async (req, res) => {
   const username = req.body.username;
-  const directory = path.join(__dirname, "tmp");
-  // const directory = "/tmp";
+  // const directory = path.join(__dirname, "tmp");
+  const directory = "/tmp";
   const location = path.join(directory, `${username}.pdf`);
 
   const stream = fs.createWriteStream(location);
