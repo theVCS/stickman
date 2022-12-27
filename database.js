@@ -103,7 +103,7 @@ const getAllData = async (startdate = "", enddate = "") => {
   return allEntries;
 };
 
-const getAllUserData = async (username) => {
+const getAllUserData = async (username, startDate = "", endDate = "") => {
   let allEntries = new Array();
   const entries = await getData(username);
 
@@ -114,7 +114,8 @@ const getAllUserData = async (username) => {
     helper.push(mp["name"]);
     helper.push(mp["number"]);
     helper.push(mp["date_added"].toDate());
-    allEntries.push(helper);
+    if (!startDate || (helper[3] >= startDate && helper[3] <= endDate))
+      allEntries.push(helper);
   });
 
   allEntries.sort((a, b) => {

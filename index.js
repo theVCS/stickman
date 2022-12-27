@@ -12,8 +12,8 @@ const app = express();
 const PORT = 3000;
 // const HOST = '0.0.0.0';
 
-app.listen(PORT, () => {
-  console.log(`Running on port ${PORT}`);
+app.listen(process.env.PORT || PORT, () => {
+  console.log(`Running on port ${process.env.PORT || PORT}`);
 });
 
 const {
@@ -25,6 +25,7 @@ const {
   updateConter,
   getAllUserData,
 } = require("./database");
+const { start } = require("repl");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -215,9 +216,14 @@ app.get("/getAllData", async (req, res) => {
 
 app.post("/savePDF", async (req, res) => {
   const username = req.body.username;
+  let startDate = req.body.startDate;
+  let endDate = req.body.endDate;
   const directory = path.join(__dirname, "tmp");
   // const directory = "/tmp";
   const location = path.join(directory, `${username}.pdf`);
+  
+  if (!!startDate) startDate = new Date(startDate);
+  if (!!endDate) endDate = new Date(endDate);
 
   const stream = fs.createWriteStream(location);
   const doc = new PDFDocument();
@@ -225,7 +231,7 @@ app.post("/savePDF", async (req, res) => {
   const description = `This data belongs to ${username}`;
   doc.fontSize(27).text(description, 100, 100);
 
-  const datum = await getAllUserData(username);
+  const datum = await getAllUserData(username, startDate, endDate);
 
   for (const data of datum) {
     const text = `Id: ${data[0]}\nName: ${data[1]}\nNumber: ${data[2]}\nDate: ${data[3]}`;
@@ -243,6 +249,5 @@ app.post("/getPDF", async (req, res) => {
   const PDFlocation = req.body.location;
   res.download(PDFlocation);
 });
-
 
 module.exports = app;

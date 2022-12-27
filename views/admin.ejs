@@ -47,19 +47,6 @@
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
 
-
-            <!-- <div class="dropdown mt-3">
-                <button class="btn btn-warning text-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                    PDF
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Action</a></li>
-                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                </ul>
-            </div> -->
-
             <button type="button" class="btn btn-warning text-light" onclick="getAllPDFs()" id="downloadBtn">ALL
                 PDFs</button>
 
@@ -149,13 +136,13 @@
             });
         }
 
-        function pdfDownload(username) {
+        function pdfDownload(username, startDate, endDate) {
             let URL1 = `${window.location.origin}/savePDF`;
             let URL2 = `${window.location.origin}/getPDF`;
 
             $.ajax({
                 type: "POST",
-                data: { username: username },
+                data: { username: username, startDate: startDate, endDate: endDate },
                 url: URL1,
                 success: async (data) => {
                     if (data.success) {
@@ -168,17 +155,19 @@
             });
         }
 
-        function getAllPDFs(){
+        function getAllPDFs() {
             let URL = `${window.location.origin}/getAllUser`;
             document.getElementById("downloadBtn").innerHTML = `<div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading...</span></div>`;
             document.getElementById("downloadBtn").disabled = true;
+            const startDate = $("#startDate").val();
+            const endDate = $("#endDate").val();
 
             $.ajax({
                 type: "POST",
                 url: URL,
                 success: async (data) => {
                     for(const username of data["users"]){
-                        pdfDownload(username)
+                        pdfDownload(username, startDate, endDate)
                     }
                 },
                 error: (res) => {
