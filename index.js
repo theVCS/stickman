@@ -5,6 +5,7 @@ const path = require("path");
 const { Timestamp } = require("firebase/firestore");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
+const { zip } = require("zip-a-folder");
 
 const { getUserInfo } = require("./helper");
 
@@ -221,7 +222,7 @@ app.post("/savePDF", async (req, res) => {
   const directory = path.join(__dirname, "tmp");
   // const directory = "/tmp";
   const location = path.join(directory, `${username}.pdf`);
-  
+
   if (!!startDate) startDate = new Date(startDate);
   if (!!endDate) endDate = new Date(endDate);
 
@@ -248,6 +249,20 @@ app.post("/savePDF", async (req, res) => {
 app.post("/getPDF", async (req, res) => {
   const PDFlocation = req.body.location;
   res.download(PDFlocation);
+});
+
+app.post("/zip", async (req, res) => {
+  const loc = path.join(__dirname, "entries.zip");
+  await zip(path.join(__dirname, "tmp"), loc);
+  res.send({
+    success: true,
+    location: loc,
+  });
+});
+
+app.post("/downloadZip", async (req, res) => {
+  const location = req.body.location;
+  res.download(location);
 });
 
 module.exports = app;

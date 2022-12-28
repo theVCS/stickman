@@ -92,12 +92,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
     <script>
-        function savePDF(URL, pdfLocation, username) {
-            const fileName = `${username}.pdf`;
+        function downloadZip(zipLocation) {
+            let URL = `${window.location.origin}/downloadZip`;
+            const fileName = "entries.zip";
 
             $.ajax({
                 type: "POST",
-                data: { location: pdfLocation },
+                data: { location: zipLocation },
                 url: URL,
                 cache: false,
                 xhr: function () {
@@ -114,7 +115,7 @@
                     return xhr;
                 },
                 success: async (data) => {
-                    var blob = new Blob([data], { type: "application/octetstream" });
+                    var blob = new Blob([data], { type: "application/zip" });
 
                     var isIE = false || !!document.documentMode;
                     if (isIE) {
@@ -131,27 +132,44 @@
                     }
                 },
                 error: (res) => {
-                    alert("Faced issue while downloading the PDF");
+                    alert("Faced issue while downloading the zip");
                 },
             });
         }
 
-        function pdfDownload(username, startDate, endDate) {
-            let URL1 = `${window.location.origin}/savePDF`;
-            let URL2 = `${window.location.origin}/getPDF`;
-
-            $.ajax({
+        async function savePDF(username, startDate, endDate) {
+            let URL = `${window.location.origin}/savePDF`;
+            
+            await $.ajax({
                 type: "POST",
                 data: { username: username, startDate: startDate, endDate: endDate },
-                url: URL1,
+                url: URL,
                 success: async (data) => {
                     if (data.success) {
-                        savePDF(URL2, data.location, username)
+                        console.log(`saved pdf of user - ${username} at location - ${data.location}`)
                     }
                 },
                 error: (res) => {
-                    alert("Faced issue while saving the PDF");
+                    alert(`Faced issue while saving the PDF of user - ${username}`);
                 },
+            });
+        }
+
+        function zipFolder() {
+            let URL = `${window.location.origin}/zip`;
+
+            $.ajax({
+                type: "POST",
+                url: URL,
+                success: async (data) => {
+                    if (data.success) {
+                        console.log("successfully created the zip")
+                        downloadZip(data.location);
+                    }
+                },
+                error: (res) => {
+                    alert("Faced issue while zipping the PDFs");
+                }
             });
         }
 
@@ -166,12 +184,16 @@
                 type: "POST",
                 url: URL,
                 success: async (data) => {
-                    for(const username of data["users"]){
-                        pdfDownload(username, startDate, endDate)
+                    // saving PDFs
+                    for (const username of data["users"]) {
+                        await savePDF(username, startDate, endDate)
                     }
+
+                    // zipping the PDFs
+                    zipFolder();
                 },
                 error: (res) => {
-                    alert("Faced issue while saving the PDF");
+                    alert("Faced issue while downloading the PDFs");
                 },
                 complete: (res) => {
                     document.getElementById("downloadBtn").innerHTML = "ALL PDFs"
