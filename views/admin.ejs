@@ -92,13 +92,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
     <script>
-        function downloadZip(zipLocation) {
-            let URL = `${window.location.origin}/downloadZip`;
-            const fileName = "entries.zip";
+        function downloadPDF(pdfLocation) {
+            let URL = `${window.location.origin}/getPDF`;
+            const fileName = "entries.pdf";
 
             $.ajax({
                 type: "POST",
-                data: { location: zipLocation },
+                data: { location: pdfLocation },
                 url: URL,
                 cache: false,
                 xhr: function () {
@@ -115,7 +115,7 @@
                     return xhr;
                 },
                 success: async (data) => {
-                    var blob = new Blob([data], { type: "application/zip" });
+                    var blob = new Blob([data], { type: "application/octetstream" });
 
                     var isIE = false || !!document.documentMode;
                     if (isIE) {
@@ -132,49 +132,13 @@
                     }
                 },
                 error: (res) => {
-                    alert("Faced issue while downloading the zip");
+                    alert("Faced issue while downloading the PDF");
                 },
-            });
-        }
-
-        async function savePDF(username, startDate, endDate) {
-            let URL = `${window.location.origin}/savePDF`;
-            
-            await $.ajax({
-                type: "POST",
-                data: { username: username, startDate: startDate, endDate: endDate },
-                url: URL,
-                success: async (data) => {
-                    if (data.success) {
-                        console.log(`saved pdf of user - ${username} at location - ${data.location}`)
-                    }
-                },
-                error: (res) => {
-                    alert(`Faced issue while saving the PDF of user - ${username}`);
-                },
-            });
-        }
-
-        function zipFolder() {
-            let URL = `${window.location.origin}/zip`;
-
-            $.ajax({
-                type: "POST",
-                url: URL,
-                success: async (data) => {
-                    if (data.success) {
-                        console.log("successfully created the zip")
-                        downloadZip(data.location);
-                    }
-                },
-                error: (res) => {
-                    alert("Faced issue while zipping the PDFs");
-                }
             });
         }
 
         function getAllPDFs() {
-            let URL = `${window.location.origin}/getAllUser`;
+            let URL = `${window.location.origin}/allData`;
             document.getElementById("downloadBtn").innerHTML = `<div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading...</span></div>`;
             document.getElementById("downloadBtn").disabled = true;
             const startDate = $("#startDate").val();
@@ -183,14 +147,9 @@
             $.ajax({
                 type: "POST",
                 url: URL,
+                data: { startDate: startDate, endDate: endDate },
                 success: async (data) => {
-                    // saving PDFs
-                    for (const username of data["users"]) {
-                        await savePDF(username, startDate, endDate)
-                    }
-
-                    // zipping the PDFs
-                    zipFolder();
+                    downloadPDF(data.location);
                 },
                 error: (res) => {
                     alert("Faced issue while downloading the PDFs");

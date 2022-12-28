@@ -5,7 +5,6 @@ const path = require("path");
 const { Timestamp } = require("firebase/firestore");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
-const { zip } = require("zip-a-folder");
 
 const { getUserInfo } = require("./helper");
 
@@ -26,7 +25,6 @@ const {
   updateConter,
   getAllUserData,
 } = require("./database");
-const { start } = require("repl");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -220,7 +218,6 @@ app.post("/savePDF", async (req, res) => {
   let startDate = req.body.startDate;
   let endDate = req.body.endDate;
   const directory = path.join(__dirname, "tmp");
-  // const directory = "/tmp";
   const location = path.join(directory, `${username}.pdf`);
 
   if (!!startDate) startDate = new Date(startDate);
@@ -251,18 +248,42 @@ app.post("/getPDF", async (req, res) => {
   res.download(PDFlocation);
 });
 
-app.post("/zip", async (req, res) => {
-  const loc = path.join(__dirname, "entries.zip");
-  await zip(path.join(__dirname, "tmp"), loc);
-  res.send({
-    success: true,
-    location: loc,
-  });
-});
+app.post("/allData", async (req, res) => {
+  let startDate = req.body.startDate;
+  let endDate = req.body.endDate;
+  const directory = path.join(__dirname, "tmp");
+  const location = path.join(directory, "allUsers.pdf");
 
-app.post("/downloadZip", async (req, res) => {
-  const location = req.body.location;
-  res.download(location);
+  if (!!startDate) startDate = new Date(startDate);
+  if (!!endDate) endDate = new Date(endDate);
+  
+  const stream = fs.createWriteStream(location);
+  const doc = new PDFDocument();
+  doc.pipe(stream);
+
+  const description = `All Users Data`;
+  doc.fontSize(27).text(description, 100, 100);
+
+  for (let index = 0; index < users.length; index++) {
+    const user = users[index];
+    const username = user.username;
+    
+    const description = `This data belongs to ${username}`;
+    doc.addPage().fontSize(27).text(description, 100, 100);
+  
+    const datum = await getAllUserData(username, startDate, endDate);
+  
+    for (const data of datum) {
+      const text = `Id: ${data[0]}\nName: ${data[1]}\nNumber: ${data[2]}\nDate: ${data[3]}`;
+      doc.addPage().fontSize(15).text(text, 100, 100);
+    }
+  }
+
+  doc.end();
+
+  stream.on("finish", function () {
+    res.send({ success: true, location: location });
+  });
 });
 
 module.exports = app;
