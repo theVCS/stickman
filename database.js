@@ -127,7 +127,9 @@ const getAllUserData = async (username, startDate = "", endDate = "") => {
 
 const completeData = async (startDate = "", endDate = "") => {
   let allEntries = new Array();
+  endDate.setDate(endDate.getDate() + 1);
 
+  
   for (let index = 0; index < users.length; index++) {
     const user = users[index];
     const username = user.username;
