@@ -125,6 +125,34 @@ const getAllUserData = async (username, startDate = "", endDate = "") => {
   return allEntries;
 };
 
+const completeData = async (startDate = "", endDate = "") => {
+  let allEntries = new Array();
+
+  for (let index = 0; index < users.length; index++) {
+    const user = users[index];
+    const username = user.username;
+
+    const entries = await getData(username);
+
+    entries.forEach((mp) => {
+      let helper = new Array();
+      if (mp["count"]) return;
+      helper.push(mp["id"]);
+      helper.push(mp["name"]);
+      helper.push(mp["number"]);
+      helper.push(mp["date_added"].toDate());
+      if (!startDate || (helper[3] >= startDate && helper[3] <= endDate))
+        allEntries.push(helper);
+    });    
+  }
+
+  allEntries.sort((a, b) => {
+    return a[3] - b[3];
+  });
+  
+  return allEntries;
+};
+
 const getCount = async (username, docId) => {
   const docRef = doc(db, username, docId);
   const docSnap = await getDoc(docRef);
@@ -154,4 +182,5 @@ module.exports = {
   getCount,
   updateConter,
   getAllUserData,
+  completeData,
 };

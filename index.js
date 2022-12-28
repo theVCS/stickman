@@ -24,6 +24,7 @@ const {
   getCount,
   updateConter,
   getAllUserData,
+  completeData,
 } = require("./database");
 
 app.use(express.json());
@@ -256,27 +257,18 @@ app.post("/allData", async (req, res) => {
 
   if (!!startDate) startDate = new Date(startDate);
   if (!!endDate) endDate = new Date(endDate);
-  
+
   const stream = fs.createWriteStream(location);
   const doc = new PDFDocument();
   doc.pipe(stream);
 
-  const description = `All Users Data`;
+  const description = `Complete Data`;
   doc.fontSize(27).text(description, 100, 100);
 
-  for (let index = 0; index < users.length; index++) {
-    const user = users[index];
-    const username = user.username;
-    
-    const description = `This data belongs to ${username}`;
-    doc.addPage().fontSize(27).text(description, 100, 100);
-  
-    const datum = await getAllUserData(username, startDate, endDate);
-  
-    for (const data of datum) {
-      const text = `Id: ${data[0]}\nName: ${data[1]}\nNumber: ${data[2]}\nDate: ${data[3]}`;
-      doc.addPage().fontSize(15).text(text, 100, 100);
-    }
+  const datum = await completeData(startDate, endDate);
+  for (const data of datum) {
+    const text = `Id: ${data[0]}\nName: ${data[1]}\nNumber: ${data[2]}\nDate: ${data[3]}`;
+    doc.addPage().fontSize(15).text(text, 100, 100);
   }
 
   doc.end();
